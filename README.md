@@ -2,6 +2,8 @@
 
 **Let your agents live off your Bitcoin.** BanQor turns a Mezo trove into a credit line for AI agents. Your BTC stays locked as collateral. Agents borrow MUSD against it just in time, inside caps the contract enforces, and spend it on any x402 API on Mezo. Nobody sells BTC, and nobody tops up a hot wallet by hand.
 
+**Live:** [getbanqor.vercel.app](https://getbanqor.vercel.app) · [Dashboard on the demo vault](https://getbanqor.vercel.app/app.html#/overview?vault=0xcDa3Cb64aEd90C2A77981434d66AD3F3197fC791)
+
 > **Testnet, unaudited.** Mezo testnet (chain 31611) only. Do not use real funds.
 
 Built for the Mezo Buildathon (AKINDO). Track 2, Access and Distribution (primary), and Track 1, DeFi.
