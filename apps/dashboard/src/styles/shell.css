@@ -1,0 +1,41 @@
+/* App-only pieces around the ported pages: wallet, empty states, the vault lookup, notices, toast extras. */
+
+/* wallet chip and its menu */
+.wallet-wrap { position: relative; }
+.wallet { cursor: pointer; color: var(--smoke); }
+.wallet:hover { border-color: rgba(242,239,235,.28); }
+.wallet-menu { position: absolute; right: 0; top: calc(100% + 8px); z-index: 30; min-width: 170px; padding: 6px; border-radius: 12px; background: var(--ink-3); border: 1px solid var(--line-dark); box-shadow: 0 16px 40px rgba(0,0,0,.45); display: grid; }
+.wallet-menu button { padding: 9px 12px; border: 0; border-radius: 8px; background: transparent; text-align: left; font-size: 14px; color: var(--smoke); cursor: pointer; }
+.wallet-menu button:hover { background: rgba(242,239,235,.06); }
+
+/* empty states: no wallet, wrong network, no vault yet */
+.empty { margin: 48px auto 0; max-width: 560px; padding: 36px 28px; border-radius: 20px; border: 1px solid var(--line-dark); background: var(--ink-2); text-align: center; }
+.empty h1 { font-size: clamp(26px, 3.4vw, 36px); }
+.empty > p { margin: 10px auto 0; max-width: 44ch; color: var(--mute-dark); }
+.empty-acts { margin-top: 22px; display: grid; gap: 16px; justify-items: center; }
+.lookup { width: 100%; display: grid; gap: 8px; justify-items: center; }
+.lookup .inwrap { width: 100%; padding-right: 6px; }
+.lookup input { font-size: 14px !important; }
+.demo-link { font-size: 13.5px; color: var(--mute-dark); text-decoration: none; }
+.demo-link:hover { color: var(--orange); }
+
+/* notices inside pages */
+.alert { margin: 16px 0 0; padding: 12px 14px; border-radius: 12px; background: rgba(224,87,58,.1); border: 1px solid rgba(224,87,58,.35); color: #ffcfc2; font-size: 14px; }
+.alert a { color: inherit; }
+.loading { margin-top: 24px; }
+.notice { margin-top: 24px; display: grid; gap: 10px; justify-items: start; }
+.notice p { margin: 0; }
+.notice.warn { border-color: rgba(232,163,58,.45); }
+.empty-row { margin: 14px 0 4px; font-size: 14px; }
+.empty-row a { color: var(--orange); }
+.stage-acts { display: flex; flex-wrap: wrap; gap: 8px; }
+.more { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line-dark); font-size: 14px; }
+.more summary { cursor: pointer; color: var(--mute-dark); }
+.more summary:hover { color: var(--smoke); }
+.more p { margin: 10px 0; max-width: 60ch; font-size: 13.5px; }
+
+/* toast: dismiss, failure, explorer link */
+.toast-body { min-width: 0; overflow-wrap: anywhere; }
+.toast-body a { color: var(--ink); text-decoration-color: var(--orange); }
+.toast .xmark { color: #a8331a; font-weight: 700; flex: none; }
+.toast-x { margin-left: auto; flex: none; border: 0; background: transparent; color: var(--mute-light); font-size: 18px; line-height: 1; cursor: pointer; }

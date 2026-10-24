@@ -1,3 +1,4 @@
+import { resolve } from "node:path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
@@ -8,4 +9,8 @@ export default defineConfig({
   // read the repo-root .env; Vite only exposes VITE_* variables to the browser, never keys
   envDir: "../..",
   server: { fs: { allow: ["../.."] } },
+  build: {
+    // two pages: the landing page (index.html) and the dashboard app (app.html)
+    rollupOptions: { input: { landing: resolve(__dirname, "index.html"), app: resolve(__dirname, "app.html") } },
+  },
 });

@@ -1,5 +1,6 @@
 import { createConfig, http } from "wagmi";
-import { injected } from "wagmi/connectors";
+import { injected, mock } from "wagmi/connectors";
+import { isAddress } from "viem";
 import { chainFromDeployment, type Deployment } from "@banqor/sdk";
 
 // All deployments/<chainId>.json files are bundled; VITE_CHAIN_ID picks one (NFR-7).
@@ -10,7 +11,10 @@ if (!found) throw new Error(`No deployments/${chainId}.json`);
 
 export const deployment: Deployment = found[1];
 export const rpcUrl: string = import.meta.env.VITE_MEZO_RPC || deployment.rpc;
-export const chain = chainFromDeployment({ ...deployment, rpc: rpcUrl }, chainId === 31611 ? "Mezo Testnet" : `Mezo ${chainId}`);
+export const chain = {
+  ...chainFromDeployment({ ...deployment, rpc: rpcUrl }, chainId === 31611 ? "Mezo Testnet" : `Mezo ${chainId}`),
+  testnet: chainId === 31611,
+};
 
 export const settings = {
   /** lineStatus polling interval (ARCHITECTURE §7: 10s) */
@@ -25,9 +29,18 @@ export const settings = {
   liquidationWarnBps: BigInt(import.meta.env.VITE_LIQUIDATION_WARN_BPS ?? 1000),
 };
 
+/**
+ * Dev server only: VITE_DEV_ACCOUNT=0x… adds a "wallet" that is just that address, to look at the dashboard as
+ * its owner. It holds no key, so it can read but every transaction it tries fails. Never part of a build.
+ */
+function devConnector() {
+  const a = import.meta.env.VITE_DEV_ACCOUNT;
+  return import.meta.env.DEV && a && isAddress(a) ? [mock({ accounts: [a] })] : [];
+}
+
 export const wagmiConfig = createConfig({
   chains: [chain],
-  connectors: [injected()],
+  connectors: [...devConnector(), injected()],
   transports: { [chain.id]: http(rpcUrl) },
 });
 

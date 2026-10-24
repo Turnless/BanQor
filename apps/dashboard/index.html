@@ -1,12 +1,982 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BanQor</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BanQor</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="theme-color" content="#0b0a0a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: Dusk-style landing (centered hero over Flux-style silk, bold+muted headings, bento, balance sheet, column footer)
+   on alternating black / smoke-white bands, with Flux-style sculpted silk ribbons drawn on canvas. */
+:root {
+  color-scheme: dark;
+  --ink: #0b0a0a;          /* black bands */
+  --ink-2: #151312;        /* raised surfaces on black */
+  --smoke: #f2efeb;        /* smoke-white bands */
+  --smoke-2: #e6e1db;      /* raised surfaces on smoke */
+  --orange: #ff6b1f;       /* the one accent */
+  --orange-soft: #ffb488;
+  --line-dark: rgba(242, 239, 235, 0.12);
+  --line-light: rgba(11, 10, 10, 0.12);
+  --mute-dark: rgba(242, 239, 235, 0.58);
+  --mute-light: rgba(11, 10, 10, 0.56);
+  --ok: #3fbf7f;
+  --display: "Bricolage Grotesque", "Arial Narrow", system-ui, sans-serif;
+  --body: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --wrap: 1180px;
+  --radius: 14px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+html, body { margin: 0; padding: 0; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { background: var(--ink); color: var(--smoke); font-family: var(--body); font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+a { color: inherit; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; border-radius: 6px; }
+.wrap { max-width: var(--wrap); margin-inline: auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.band-dark { background: var(--ink); color: var(--smoke); }
+.band-light { background: var(--smoke); color: var(--ink); }
+.band-light .mute { color: var(--mute-light); }
+.band-dark .mute { color: var(--mute-dark); }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
+h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -0.025em; line-height: 1.02; margin: 0; text-wrap: balance; }
+h2 { font-size: clamp(32px, 4.6vw, 54px); }
+h2 .soft { display: block; font-weight: 500; }
+.band-dark h2 .soft { color: var(--mute-dark); }
+.band-light h2 .soft { color: var(--mute-light); }
+p { margin: 0; }
+.btn { display: inline-flex; align-items: center; gap: 10px; height: 44px; padding: 0 18px; border-radius: 999px; font-weight: 600; font-size: 15px; text-decoration: none; border: 1px solid transparent; transition: transform .15s ease, background .15s ease; }
+.btn:hover { transform: translateY(-1px); }
+.btn-orange { background: var(--orange); color: var(--ink); }
+.btn-orange:hover { background: #ff8240; }
+.btn-ghost { color: inherit; border-color: currentColor; opacity: .9; }
+.btn-ghost:hover { opacity: 1; }
+.btn .arr { font-family: var(--mono); }
+section { padding-block: clamp(64px, 9vw, 112px); }
+
+/* ---------- hero ---------- */
+.hero { position: relative; overflow: hidden; padding-block: 0; background: var(--ink); isolation: isolate; }
+.hero canvas.silk { position: absolute; top: -10%; left: -10%; width: 120%; height: 120%; z-index: -2; will-change: transform; animation: silk-drift 28s ease-in-out infinite alternate; }
+/* the drawn fabric drifts, swells and turns a little, so the folds keep moving */
+@keyframes silk-drift {
+  0%   { transform: translate3d(-3%, -2%, 0) scale(1.02) rotate(-1.2deg); }
+  50%  { transform: translate3d(1.5%, 1%, 0) scale(1.08) rotate(.6deg); }
+  100% { transform: translate3d(3.5%, 2.5%, 0) scale(1.12) rotate(1.6deg); }
+}
+/* with WebGL the hero canvas is the light arc: it animates itself, so no drift and no oversizing */
+.hero canvas.silk.light { top: 0; left: 0; width: 100%; height: 100%; animation: none; will-change: auto; }
+@media (prefers-reduced-motion: reduce) { .hero canvas.silk { animation: none; } }
+.hero::before { content: ""; position: absolute; inset: 0; z-index: -1;
+  background:
+    radial-gradient(ellipse 40% 42% at 50% 52%, rgba(11,10,10,.72), rgba(11,10,10,.45) 55%, rgba(11,10,10,0) 100%),
+    linear-gradient(0deg, var(--ink) 0%, rgba(11,10,10,0) 24%),
+    linear-gradient(180deg, rgba(11,10,10,.7) 0%, rgba(11,10,10,0) 18%); }
+.nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 22px; }
+.brand { display: inline-flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 800; font-size: 21px; letter-spacing: -0.03em; text-decoration: none; }
+.brand svg { width: 26px; height: 26px; }
+.nav-links { display: flex; gap: 26px; font-size: 14px; }
+.nav-links a { text-decoration: none; color: var(--mute-dark); }
+.nav-links a:hover { color: var(--smoke); }
+.nav-cta { display: flex; gap: 10px; }
+.nav-cta .btn { height: 38px; font-size: 14px; padding: 0 15px; }
+.hero-grid { display: grid; justify-items: center; text-align: center; padding-block: clamp(72px, 11vw, 150px) clamp(88px, 12vw, 170px); }
+.hero h1 { font-size: clamp(44px, 7vw, 96px); margin: 0 auto; max-width: 14ch; }
+.hero h1 .soft { display: block; font-weight: 500; color: var(--orange-soft); }
+.hero .lede { margin-top: 24px; max-width: 46ch; margin-inline: auto; font-size: clamp(17px, 1.6vw, 19px); color: var(--mute-dark); }
+.hero .ctas { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 32px; }
+.hero .fine { margin-top: 18px; font-size: 13px; color: var(--mute-dark); }
+
+
+/* ---------- built-on strip ---------- */
+.strip { padding-block: 30px 44px; }
+.strip .row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 18px 28px; align-items: center; }
+.strip .lbl { font-size: 13px; color: var(--mute-dark); }
+.strip .mark { font-family: var(--display); font-weight: 700; font-size: 20px; letter-spacing: -0.02em; color: rgba(242,239,235,.72); }
+.strip .mark small { font-family: var(--mono); font-weight: 400; font-size: 11px; color: var(--mute-dark); margin-left: 6px; letter-spacing: 0; }
+
+/* ---------- problem ---------- */
+.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(32px, 6vw, 88px); align-items: start; }
+.split .intro { font-size: 18px; max-width: 46ch; }
+.ledger { margin-top: 34px; border-top: 1px solid var(--line-light); }
+.ledger-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; padding-block: 18px; border-bottom: 1px solid var(--line-light); }
+.ledger-row b { display: block; font-weight: 600; }
+.ledger-row .mute { font-size: 15px; }
+.verdict { align-self: center; font-family: var(--mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; border: 1px solid currentColor; transform: rotate(-2deg); white-space: nowrap; }
+.verdict.bad { color: #b33b10; }
+.verdict.good { color: var(--ink); background: var(--orange); border-color: var(--orange); }
+
+/* ---------- bento ---------- */
+.bento { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; margin-top: 44px; }
+.card { background: var(--ink-2); border: 1px solid var(--line-dark); border-radius: var(--radius); padding: 24px; min-width: 0; }
+.card h3 { font-family: var(--body); font-size: 16px; font-weight: 600; letter-spacing: 0; line-height: 1.35; }
+.card h3 .mute { font-weight: 400; }
+.c-icr { grid-column: span 4; }
+.c-big { grid-column: span 2; display: flex; flex-direction: column; justify-content: space-between; gap: 24px; }
+.c-feed { grid-column: span 3; }
+.c-worst { grid-column: span 3; }
+.icr-num { display: flex; align-items: baseline; gap: 12px; margin-top: 22px; flex-wrap: wrap; }
+.icr-num .big { font-family: var(--display); font-weight: 800; font-size: clamp(48px, 6vw, 72px); letter-spacing: -0.03em; line-height: 1; }
+.gauge { margin-top: 20px; width: 100%; height: auto; display: block; overflow: visible; }
+.kv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
+.kv div { border-top: 1px solid var(--line-dark); padding-top: 10px; }
+.kv dt { font-size: 12px; color: var(--mute-dark); }
+.kv dd { margin: 2px 0 0; font-family: var(--mono); font-size: 15px; }
+.big-stat { font-family: var(--display); font-weight: 800; font-size: clamp(56px, 7vw, 84px); line-height: .95; letter-spacing: -0.04em; }
+.big-stat span { color: var(--mute-dark); font-weight: 500; }
+.codes { display: flex; flex-wrap: wrap; gap: 6px; }
+.codes code { font-family: var(--mono); font-size: 12px; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--line-dark); color: var(--orange-soft); }
+.feed { list-style: none; padding: 0; margin: 18px 0 0; }
+.feed li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; padding: 11px 0; border-top: 1px solid var(--line-dark); font-size: 14px; }
+.feed li a { font-family: var(--mono); font-size: 12px; color: var(--mute-dark); text-decoration: none; white-space: nowrap; }
+.feed li a:hover { color: var(--orange); }
+.feed .hl { color: var(--orange); }
+.worst { margin-top: 18px; font-family: var(--mono); font-size: 14px; display: grid; gap: 10px; }
+.worst .eq { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.worst .t { padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line-dark); background: rgba(242,239,235,.03); }
+.worst .t.o { border-color: rgba(255,107,31,.5); color: var(--orange-soft); }
+
+/* ---------- steps ---------- */
+.steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin-top: 44px; counter-reset: s; }
+.step { background: var(--smoke-2); border-radius: var(--radius); padding: 22px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.step .n { font-family: var(--mono); font-size: 12px; color: var(--mute-light); }
+.step h3 { font-family: var(--display); font-size: 21px; letter-spacing: -0.02em; }
+.step p { font-size: 14.5px; color: var(--mute-light); }
+.step code { font-family: var(--mono); font-size: 12.5px; color: var(--ink); background: rgba(255,107,31,.16); padding: 1px 5px; border-radius: 4px; }
+
+/* ---------- developers ---------- */
+.code { position: relative; border-radius: var(--radius); background: #0f0e0d; border: 1px solid var(--line-dark); overflow: hidden; min-width: 0; }
+.code-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line-dark); font-family: var(--mono); font-size: 12px; color: var(--mute-dark); }
+.copy { font: inherit; color: var(--smoke); background: transparent; border: 1px solid var(--line-dark); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+.copy:hover { border-color: var(--orange); color: var(--orange); }
+.code pre { margin: 0; padding: 18px; overflow-x: auto; font-family: var(--mono); font-size: 13px; line-height: 1.7; color: #d9d4ce; }
+.tk-k { color: var(--orange); } .tk-s { color: #f3c9a8; } .tk-c { color: rgba(242,239,235,.42); } .tk-f { color: #fff; }
+
+/* ---------- developers: a scroll-driven code walkthrough; the focused step points at the lines it explains ---------- */
+.walk { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.1fr); gap: clamp(28px, 5vw, 72px); margin-top: 28px; align-items: start; }
+.walk-steps { list-style: none; margin: 0; padding: 0; }
+.walk-steps li { min-height: 52vh; display: flex; flex-direction: column; justify-content: center; gap: 10px; opacity: .3; transition: opacity .3s ease; }
+.walk-steps li:first-child { min-height: 40vh; }
+.walk-steps li.on { opacity: 1; }
+.walk-n { font-family: var(--mono); font-size: 12px; color: var(--orange); letter-spacing: .08em; }
+.walk-steps h3 { font-size: clamp(26px, 3vw, 36px); letter-spacing: -0.02em; }
+.walk-steps .plain { font-size: 18px; max-width: 38ch; }
+.walk-steps .tech { font-family: var(--mono); font-size: 12.5px; color: var(--mute-dark); }
+.walk-code { position: sticky; top: max(16px, 16vh); }
+.walk-code pre { line-height: 1.75; }
+.ln { display: block; min-height: 1.75em; margin-inline: -18px; padding-inline: 18px; transition: background .25s ease, opacity .25s ease, box-shadow .25s ease; }
+.walk.has-focus .ln { opacity: .32; }
+.walk.has-focus .ln.hl { opacity: 1; box-shadow: inset 3px 0 0 var(--orange);
+  background-color: rgba(255,107,31,.13);
+  background-image: linear-gradient(90deg, rgba(255,107,31,0), rgba(255,170,120,.38), rgba(255,107,31,0));
+  background-size: 35% 100%; background-repeat: no-repeat; background-position: -40% 0; animation: line-sweep .9s ease-out .1s both; }
+@keyframes line-sweep { to { background-position: 140% 0; } }
+/* the focused step title gets an arrow nudging toward the code it explains */
+.walk-steps li h3::after { content: "\2192"; display: inline-block; margin-left: 12px; color: var(--orange); opacity: 0; transform: translateX(-6px); transition: opacity .3s ease, transform .3s ease; }
+.walk-steps li.on h3::after { opacity: 1; transform: none; animation: nudge 1.1s ease-in-out infinite; }
+@keyframes nudge { 50% { transform: translateX(7px); } }
+@keyframes nudge-up { 50% { transform: translateY(-6px); } }
+@media (max-width: 980px) {
+  .walk { grid-template-columns: minmax(0, 1fr); }
+  .walk-code { order: -1; top: 8px; z-index: 2; }
+  .walk-steps li h3::after { content: "\2191"; }
+  .walk-steps li.on h3::after { animation-name: nudge-up; }
+  .walk-code pre { font-size: 11.5px; padding: 12px 18px; }
+  .walk-steps li { min-height: 46vh; }
+}
+@media (prefers-reduced-motion: reduce) { .walk-steps li, .ln { transition: none; } .walk.has-focus .ln.hl, .walk-steps li.on h3::after { animation: none; } }
+
+/* ---------- proof stats ---------- */
+.proof-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 44px; border-top: 1px solid var(--line-light); }
+.proof-grid div { padding: 26px 20px 0 0; }
+.proof-grid .n { font-family: var(--display); font-weight: 800; font-size: clamp(40px, 5vw, 64px); letter-spacing: -0.035em; line-height: 1; }
+.proof-grid .n em { font-style: normal; color: var(--orange); }
+.proof-grid p { margin-top: 10px; font-size: 14.5px; }
+.proof-note { margin-top: 30px; font-size: 13px; }
+.proof-note a { text-decoration-color: var(--orange); text-underline-offset: 3px; }
+
+/* ---------- who gains: a balance sheet, before vs with BanQor ---------- */
+.sheet { margin-top: 44px; }
+.sheet-head, .sheet-row { display: grid; grid-template-columns: minmax(0, .75fr) minmax(0, 1fr) minmax(0, 1.25fr); gap: 28px; }
+.sheet-head { padding-block: 12px; border-top: 1px solid var(--line-dark); border-bottom: 1px solid var(--line-dark);
+  font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--mute-dark); }
+.sheet-row { padding-block: 26px; border-bottom: 1px solid var(--line-dark); align-items: baseline; }
+.sheet-row .who { font-family: var(--display); font-weight: 700; font-size: clamp(22px, 2.3vw, 28px); letter-spacing: -0.02em; line-height: 1.1; }
+.sheet-row .who small { display: block; margin-top: 6px; font-family: var(--mono); font-weight: 400; font-size: 12px; letter-spacing: 0; color: var(--mute-dark); }
+.sheet-row .before { color: var(--mute-dark); font-size: 15.5px; }
+.sheet-row .after { font-size: 16.5px; display: grid; grid-template-columns: 22px minmax(0, 1fr); }
+.sheet-row .after::before { content: "→"; font-family: var(--mono); color: var(--orange); }
+.sheet-row .after b { font-weight: 600; }
+.sheet-total { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; padding-block: 18px; border-bottom: 3px double rgba(242,239,235,.28);
+  font-family: var(--mono); font-size: 13px; color: var(--mute-dark); }
+.sheet-total b { color: var(--orange); font-weight: 500; }
+
+/* ---------- finale: CTA and footer share one black ground over a giant wordmark ---------- */
+.finale { position: relative; overflow: hidden; padding-bottom: clamp(28px, 4vw, 48px); }
+/* the CTA sits in front of the giant wordmark, centred over it */
+.cta-stage { position: relative; isolation: isolate; display: grid; align-items: center; min-height: clamp(220px, 30vw, 500px); }
+.finale .cta { padding-block: clamp(56px, 8vw, 120px); }
+.giant { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: -1; pointer-events: none; user-select: none;
+  font-family: var(--display); font-weight: 800; font-size: clamp(96px, 25vw, 420px); line-height: .9; letter-spacing: -0.06em; white-space: nowrap;
+  background: linear-gradient(180deg, rgba(242,239,235,.13), rgba(242,239,235,.03) 85%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.cta .inner { text-align: center; display: grid; justify-items: center; gap: 24px; }
+.cta h2 { font-size: clamp(36px, 5.4vw, 66px); }
+.cta .ctas { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+
+/* ---------- seams: each change of band colour is one smooth linear gradient ---------- */
+.seam { height: clamp(40px, 5vw, 64px); opacity: .08; } /* every seam kept barely visible */
+.seam.d2l { background: linear-gradient(180deg, var(--ink), var(--smoke)); }
+.seam.l2d { background: linear-gradient(180deg, var(--smoke), var(--ink)); }
+/* the bands now meet through seams, so trim the padding that faced them */
+.seam + section { padding-top: clamp(40px, 6vw, 72px); }
+section:has(+ .seam) { padding-bottom: clamp(40px, 6vw, 72px); }
+
+/* ---------- footer ---------- */
+footer { padding-block: 8px 0; }
+.foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px 32px; padding-top: 28px; border-top: 1px solid var(--line-dark); }
+.foot-links { display: flex; flex-wrap: wrap; gap: 10px 24px; font-size: 14px; }
+.foot-links a { text-decoration: none; color: var(--mute-dark); }
+.foot-links a:hover { color: var(--orange); }
+.foot-base { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; margin-top: 20px; font-family: var(--mono); font-size: 12px; color: var(--mute-dark); }
+
+/* ---------- cinematic: film grain, edge vignette, opening shot ---------- */
+body::before { content: ""; position: fixed; inset: 0; z-index: 60; pointer-events: none;
+  background: radial-gradient(ellipse 85% 80% at 50% 50%, rgba(0,0,0,0) 62%, rgba(0,0,0,.26) 100%); }
+body::after { content: ""; position: fixed; inset: -50%; z-index: 61; pointer-events: none; opacity: .05; will-change: transform; /* no blend mode: blending a full-screen layer every frame drops the page to ~7 fps */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.2 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  animation: grain .9s steps(5) infinite; }
+@keyframes grain { 0% { transform: translate(0, 0); } 20% { transform: translate(-3%, 2%); } 40% { transform: translate(2%, -3%); } 60% { transform: translate(-2%, -1%); } 80% { transform: translate(3%, 3%); } 100% { transform: translate(0, 0); } }
+.hero .nav { animation: shot-fade .9s ease .5s both; }
+.hero h1 { animation: rack-in 1.6s cubic-bezier(.2,.8,.2,1) .15s both; }
+.hero .lede { animation: rise-in 1.1s cubic-bezier(.2,.8,.2,1) .7s both; }
+.hero .ctas { animation: rise-in 1.1s cubic-bezier(.2,.8,.2,1) .9s both; }
+.hero .fine { animation: rise-in 1.1s cubic-bezier(.2,.8,.2,1) 1.05s both; }
+@keyframes rack-in { from { opacity: .25; filter: blur(16px); transform: translateY(20px) scale(1.03); } to { opacity: 1; filter: blur(0); transform: none; } }
+@keyframes rise-in { from { opacity: .2; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes shot-fade { from { opacity: .2; } to { opacity: 1; } }
+.hero-grid { will-change: transform, opacity; }
+section h2 { transition: filter .2s linear; }
+@media (prefers-reduced-motion: reduce) {
+  body::after, .hero .nav, .hero h1, .hero .lede, .hero .ctas, .hero .fine { animation: none; }
+}
+
+/* ---------- motion & live components ---------- */
+.marquee { flex: 1 1 320px; min-width: 0; overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+.track { display: flex; gap: 44px; width: max-content; animation: marquee 34s linear infinite; }
+.track .mark { white-space: nowrap; }
+@keyframes marquee { to { transform: translateX(calc(-50% - 22px)); } }
+.verdict.stamped { animation: stamp .45s cubic-bezier(.2,1.6,.4,1) both; }
+@keyframes stamp { from { transform: rotate(-2deg) scale(1.7); } to { transform: rotate(-2deg) scale(1); } }
+.gauge .marker { transition: transform 1.4s cubic-bezier(.2,.8,.2,1); }
+.gauge .marker.from-floor { transform: translateX(-162px); }
+.gauge .pulse { transform-box: fill-box; transform-origin: center; animation: pulse 2.4s ease-out infinite; }
+@keyframes pulse { from { transform: scale(1); opacity: .9; } to { transform: scale(2.6); opacity: 0; } }
+.replay { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--mute-dark); }
+.rec { width: 8px; height: 8px; border-radius: 50%; background: var(--orange); animation: blink 1.6s ease-in-out infinite; }
+@keyframes blink { 50% { opacity: .2; } }
+.feed li { transition: background .5s ease, padding-left .35s ease; }
+.feed li.now { background: linear-gradient(90deg, rgba(255,107,31,.16), rgba(255,107,31,0)); padding-left: 10px; }
+.beam { position: relative; height: 2px; margin-top: 44px; background: var(--line-light); border-radius: 2px; }
+.beam-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 10%; border-radius: 2px; background: linear-gradient(90deg, rgba(255,107,31,.15), var(--orange)); transition: width .9s cubic-bezier(.4,0,.2,1); }
+.beam-dot { position: absolute; top: 50%; left: 10%; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: var(--orange);
+  box-shadow: 0 0 0 5px rgba(255,107,31,.2), 0 0 18px rgba(255,107,31,.8); transition: left .9s cubic-bezier(.4,0,.2,1); }
+.beam + .steps { margin-top: 22px; }
+.step { transition: transform .45s ease, box-shadow .45s ease, background .45s ease; }
+.step.on { transform: translateY(-6px); background: #fff; box-shadow: 0 18px 40px rgba(11,10,10,.10), inset 0 0 0 1.5px var(--orange); }
+.step.on .n { color: var(--orange); }
+.caret { display: inline-block; width: 8px; height: 1.1em; margin-left: 4px; vertical-align: -2px; background: var(--orange); animation: blink 1.1s steps(1) infinite; }
+.reveal { transition: opacity .8s ease, transform .8s cubic-bezier(.2,.8,.2,1); }
+.reveal.rv { opacity: .4; transform: translateY(22px); }
+@media (max-width: 980px) { .beam { display: none; } .beam + .steps { margin-top: 44px; } }
+@media (prefers-reduced-motion: reduce) {
+  .track, .gauge .pulse, .rec, .caret, .verdict.stamped { animation: none; }
+  .reveal, .step, .feed li, .beam-fill, .beam-dot, .gauge .marker { transition: none; }
+}
+
+/* ---------- reading focus: words light up as you scroll, and the row at screen centre is the one in focus ---------- */
+.split .intro.word-reveal { font-family: var(--display); font-weight: 600; font-size: clamp(24px, 2.6vw, 34px); line-height: 1.22; letter-spacing: -0.015em; max-width: 24ch; text-wrap: pretty; }
+.word-reveal .w { transition: color .25s ease; }
+.band-light .word-reveal .w { color: rgba(11,10,10,.18); }
+.band-light .word-reveal .w.lit { color: var(--ink); }
+.band-light .word-reveal .w.lit.hot { color: var(--orange); }
+.focus-rows > .ledger-row, .focus-rows > .sheet-row { position: relative; transition: opacity .25s ease, transform .8s cubic-bezier(.2,.8,.2,1); }
+.focus-rows > .ledger-row::before, .focus-rows > .sheet-row::before { content: ""; position: absolute; left: -18px; top: 18px; bottom: 18px; width: 3px; border-radius: 3px;
+  background: var(--orange); transform: scaleY(0); transform-origin: center; transition: transform .3s ease; }
+.focus-rows > .lit::before { transform: scaleY(1); }
+@media (max-width: 980px) { .focus-rows > .ledger-row::before, .focus-rows > .sheet-row::before { left: -10px; } }
+
+/* ---------- how it works: pinned while you scroll, the cards travel sideways and the centre one is in focus ---------- */
+.steps-viewport { padding-block: 0; }
+#how.is-pinned { padding-block: 0; }
+#how.is-pinned .pin { position: sticky; top: 0; height: 100vh; height: 100svh; display: flex; flex-direction: column; justify-content: center; gap: 36px; overflow: hidden; }
+#how.is-pinned .steps-viewport { max-width: none; padding-left: 0; padding-right: 0; }
+#how.is-pinned .steps { display: flex; gap: 24px; width: max-content; margin-top: 0; will-change: transform; }
+#how.is-pinned .step { flex: 0 0 auto; width: min(78vw, 400px); min-height: 250px; padding: 28px; transform-origin: center;
+  transition: box-shadow .3s ease, background .3s ease; }
+#how.is-pinned .step h3 { font-size: clamp(24px, 2.4vw, 30px); }
+#how.is-pinned .step p { font-size: 15.5px; }
+#how.is-pinned .beam { display: block; margin-top: 30px; }
+#how.is-pinned .beam-fill, #how.is-pinned .beam-dot { transition: none; }
+
+/* ---------- responsive ---------- */
+@media (max-width: 980px) {
+  .nav-links { display: none; }
+  .hero-grid { grid-template-columns: minmax(0, 1fr); }
+  .hero::before { background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(11,10,10,.92), rgba(11,10,10,.72) 70%, rgba(11,10,10,.4)), linear-gradient(0deg, var(--ink), rgba(11,10,10,0) 30%); }
+  .split { grid-template-columns: minmax(0, 1fr); }
+  .bento { grid-template-columns: minmax(0, 1fr); }
+  .c-icr, .c-big, .c-feed, .c-worst { grid-column: auto; }
+  .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .proof-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 28px; }
+  .sheet-head { display: none; }
+  .sheet-row { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .sheet-row .before::before { content: "Before: "; font-family: var(--mono); font-size: 12px; }
+}
+@media (max-width: 560px) {
+  .nav-cta .btn-ghost { display: none; }
+  .steps { grid-template-columns: minmax(0, 1fr); }
+  .kv { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn { transition: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ================= HERO ================= -->
+<header class="hero">
+  <canvas class="silk" id="silk-hero" aria-hidden="true"></canvas>
+  <div class="wrap">
+    <nav class="nav" aria-label="Main">
+      <a class="brand" href="#top" id="top">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="15" cy="15" r="11" fill="none" stroke="#f2efeb" stroke-width="3.2"/><path d="M20 20 L27.5 27.5" stroke="#ff6b1f" stroke-width="3.6" stroke-linecap="round"/><circle cx="15" cy="15" r="3.6" fill="#ff6b1f"/></svg>
+        BanQor
+      </a>
+      <div class="nav-links">
+        <a href="#problem">Why</a>
+        <a href="#how">How it works</a>
+        <a href="#developers">Developers</a>
+        <a href="#proof">Proof</a>
+        <a href="#parties">Who gains</a>
+      </div>
+      <div class="nav-cta">
+        <a class="btn btn-ghost" href="https://github.com/Turnless/BanQor" target="_blank" rel="noopener">GitHub</a>
+        <a class="btn btn-orange" href="app.html#/overview">Open dashboard <span class="arr">→</span></a>
+      </div>
+    </nav>
+
+    <div class="hero-grid">
+      <div>
+        <h1>Let your agents<span class="soft">live off your Bitcoin.</span></h1>
+        <p class="lede">BanQor turns a Mezo trove into a credit line for AI agents. Your BTC stays locked as collateral. Agents borrow MUSD against it just in time, inside caps they can't break, and pay any x402 API.</p>
+        <div class="ctas">
+          <a class="btn btn-orange" href="#proof">See it working <span class="arr">→</span></a>
+          <a class="btn btn-ghost" href="https://github.com/Turnless/BanQor" target="_blank" rel="noopener">Read the code</a>
+        </div>
+        <p class="fine">Testnet only. Unaudited. Contracts verified on Sourcify.</p>
+      </div>
+
+    </div>
+  </div>
+</header>
+
+<!-- ================= BUILT ON ================= -->
+<div class="band-dark strip">
+  <div class="wrap row">
+    <span class="lbl">Extends Mezo's own stack</span>
+    <div class="marquee">
+      <div class="track">
+        <span class="mark">Mezo<small>troves</small></span>
+        <span class="mark">MUSD<small>stablecoin</small></span>
+        <span class="mark">x402<small>exact</small></span>
+        <span class="mark">Permit2<small>EIP-2612</small></span>
+        <span class="mark">Sourcify<small>verified</small></span>
+        <span class="mark">Foundry<small>tested</small></span>
+        <span class="mark">viem<small>SDK</small></span>
+        <span class="mark" aria-hidden="true">Mezo<small>troves</small></span>
+        <span class="mark" aria-hidden="true">MUSD<small>stablecoin</small></span>
+        <span class="mark" aria-hidden="true">x402<small>exact</small></span>
+        <span class="mark" aria-hidden="true">Permit2<small>EIP-2612</small></span>
+        <span class="mark" aria-hidden="true">Sourcify<small>verified</small></span>
+        <span class="mark" aria-hidden="true">Foundry<small>tested</small></span>
+        <span class="mark" aria-hidden="true">viem<small>SDK</small></span>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="seam d2l" aria-hidden="true"></div>
+
+<!-- ================= PROBLEM ================= -->
+<section class="band-light" id="problem">
+  <div class="wrap split">
+    <div>
+      <p class="eyebrow mute">The problem</p>
+      <h2 style="margin-top:14px">Agents need money.<span class="soft">They can't hold it safely.</span></h2>
+    </div>
+    <div>
+      <p class="intro word-reveal">AI agents now pay for APIs per request over x402. Someone has to fund them. Today a BTC holder has three bad options.</p>
+      <div class="ledger">
+        <div class="ledger-row"><div><b>Fund a big hot wallet</b><span class="mute">One bug or leaked key and the balance is gone.</span></div><span class="verdict bad">Drained</span></div>
+        <div class="ledger-row"><div><b>Fund a small one</b><span class="mute">The agent stalls when it runs dry, so a human babysits it.</span></div><span class="verdict bad">Stalled</span></div>
+        <div class="ledger-row"><div><b>Sell BTC for stablecoins</b><span class="mute">Defeats the point of holding Bitcoin on Mezo.</span></div><span class="verdict bad">Sold</span></div>
+        <div class="ledger-row"><div><b>Give it a BanQor credit line</b><span class="mute">BTC stays put. The agent borrows small amounts on demand, inside on-chain caps.</span></div><span class="verdict good">Funded</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="seam l2d" aria-hidden="true"></div>
+
+<!-- ================= BENTO ================= -->
+<section class="band-dark" id="line">
+  <div class="wrap">
+    <p class="eyebrow mute">The line</p>
+    <h2 style="margin-top:14px">One trove, many agents.<span class="soft">Every draw on the record.</span></h2>
+
+    <div class="bento">
+      <article class="card c-icr">
+        <h3>Collateral health. <span class="mute">Agents can only borrow while the trove stays above your floor. Mezo liquidates at 110%; the default floor is 200%.</span></h3>
+        <div class="icr-num"><span class="big mono">281%</span><span class="mute mono">ICR on the demo vault</span></div>
+        <svg class="gauge" viewBox="0 0 640 74" role="img" aria-label="ICR scale from 100% to 400%: liquidation at 110%, floor at 200%, current 281%">
+          <!-- scale: x = 20 + (icr - 100) * 2  (100% -> 20, 400% -> 620) -->
+          <rect x="20" y="22" width="600" height="10" rx="5" fill="rgba(242,239,235,.10)"/>
+          <rect x="20" y="22" width="20" height="10" rx="5" fill="#a83a10"/>
+          <rect x="220" y="22" width="400" height="10" rx="5" fill="rgba(255,107,31,.30)"/>
+          <line x1="40" y1="14" x2="40" y2="40" stroke="#c9461a" stroke-width="2"/>
+          <line x1="220" y1="14" x2="220" y2="40" stroke="#ff6b1f" stroke-width="2"/>
+          <g class="marker">
+            <circle class="pulse" cx="382" cy="27" r="8" fill="none" stroke="#ff6b1f" stroke-width="2"/>
+            <circle cx="382" cy="27" r="8" fill="#f2efeb" stroke="#0b0a0a" stroke-width="3"/>
+          </g>
+          <text x="40" y="60" fill="rgba(242,239,235,.6)" font-family="Geist Mono, monospace" font-size="12" text-anchor="middle">110% liquidation</text>
+          <text x="220" y="60" fill="#ffb488" font-family="Geist Mono, monospace" font-size="12" text-anchor="middle">200% floor</text>
+          <text x="382" y="60" fill="#f2efeb" font-family="Geist Mono, monospace" font-size="12" text-anchor="middle">281% now</text>
+          <text x="620" y="60" fill="rgba(242,239,235,.6)" font-family="Geist Mono, monospace" font-size="12" text-anchor="end">400%</text>
+        </svg>
+        <dl class="kv">
+          <div><dt>Collateral</dt><dd>0.07 BTC</dd></div>
+          <div><dt>Debt</dt><dd>2,007.81 MUSD</dd></div>
+          <div><dt>Draws stop below</dt><dd>$57,366 / BTC</dd></div>
+        </dl>
+      </article>
+
+      <article class="card c-big">
+        <h3>Breaches blocked. <span class="mute">The breach demo, run on testnet against the live vault.</span></h3>
+        <div class="big-stat"><span class="v" data-count="4">4</span><span>/4</span></div>
+        <div class="codes"><code>DrawTooLarge</code><code>DailyCapExceeded</code><code>Paused</code><code>NotAgent</code></div>
+      </article>
+
+      <article class="card c-feed">
+        <h3>Activity. <span class="mute">Straight from the vault's events.</span></h3>
+        <p class="replay"><span class="rec"></span>replaying on-chain events</p>
+        <ul class="feed" id="feed">
+          <li><span>Agent drew 1 MUSD, <span class="hl">borrowed 6 from the trove</span></span><a href="https://explorer.test.mezo.org/tx/0x7fc61371d7e4f31a58c68a40c6958d0ee2aeb564f8c88d8ed156473bfa22bf5c" target="_blank" rel="noopener">0x7fc6…22bf5c ↗</a></li>
+          <li><span>Agent drew 1 MUSD from the vault float</span><a href="https://explorer.test.mezo.org/tx/0x74905918297af5a7610ffcbd1f8bf1d2ac45fdbecfb07d15f429cb2893849fe2" target="_blank" rel="noopener">0x7490…849fe2 ↗</a></li>
+          <li><span>Owner paused all agents</span><a href="https://explorer.test.mezo.org/tx/0x77493bc3f798e093a870fdd3be1390d995260f4a8b13677ca64637d46e561383" target="_blank" rel="noopener">0x7749…561383 ↗</a></li>
+          <li><span>Owner unpaused agents</span><a href="https://explorer.test.mezo.org/tx/0x0cecdd717447e12a3efaaf47d1db7b42d7b91b0b578293bd172d7bb51d5478f1" target="_blank" rel="noopener">0x0cec…5478f1 ↗</a></li>
+          <li><span>Agent drew 1 MUSD from the vault float</span><a href="https://explorer.test.mezo.org/tx/0x3b6c76fe482d3fd65604694ce1708f58ddeebb6585634a5de1aef2a8e7b407a5" target="_blank" rel="noopener">0x3b6c…b407a5 ↗</a></li>
+        </ul>
+      </article>
+
+      <article class="card c-worst">
+        <h3>The worst case is small. <span class="mute">An agent key can't touch the BTC or call owner functions. If one leaks, the most it can take is:</span></h3>
+        <div class="worst">
+          <div class="eq"><span class="t">float it holds</span><span>+</span><span class="t">rest of today's cap</span><span>=</span><span class="t o">≤ 2 + 20 MUSD</span></div>
+          <p class="mute" style="font-family:var(--body);font-size:14px">With the demo policy, until the owner presses pause. Then every draw reverts.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+<div class="seam d2l" aria-hidden="true"></div>
+
+<!-- ================= HOW IT WORKS ================= -->
+<section class="band-light" id="how">
+  <div class="pin">
+  <div class="wrap">
+    <p class="eyebrow mute">How it works</p>
+    <h2 style="margin-top:14px">From BTC to a paid API call.<span class="soft">Five steps, one of them yours.</span></h2>
+    <div class="beam" aria-hidden="true"><span class="beam-fill" id="beam-fill"></span><span class="beam-dot" id="beam-dot"></span></div>
+  </div>
+  <div class="wrap steps-viewport">
+    <div class="steps" id="steps">
+      <div class="step"><span class="n">1 · owner</span><h3>Open a line</h3><p>Deposit BTC. The vault opens a Mezo trove in its own name and keeps the minted MUSD.</p></div>
+      <div class="step"><span class="n">2 · owner</span><h3>Set the rules</h3><p>Per agent: daily cap, max float, max single draw, expiry. Plus an ICR floor for the trove.</p></div>
+      <div class="step"><span class="n">3 · agent</span><h3>Draw just in time</h3><p>When its float runs low the SDK calls <code>draw()</code>. If the vault is short, it borrows against the BTC.</p></div>
+      <div class="step"><span class="n">4 · agent</span><h3>Pay per request</h3><p>The agent pays x402 APIs in MUSD with a signed permit. No gas, no custom protocol.</p></div>
+      <div class="step"><span class="n">5 · owner</span><h3>Stay in control</h3><p>Pause, change rules, repay, add BTC or close. Anyone can rebalance a trove near its floor.</p></div>
+    </div>
+  </div>
+  </div>
+</section>
+<div class="seam l2d" aria-hidden="true"></div>
+
+<!-- ================= DEVELOPERS ================= -->
+<section class="band-dark dev" id="developers">
+  <div class="wrap">
+    <p class="eyebrow mute">For agent developers, explained for everyone</p>
+    <h2 style="margin-top:14px">Swap one line.<span class="soft">Your agent can pay.</span></h2>
+    <div class="walk" id="walk">
+      <ol class="walk-steps" id="walk-steps">
+        <li data-lines="1"><span class="walk-n">1</span><h3>Bring in BanQor</h3><p class="plain">Your AI agent adds the BanQor helper. That's the only new piece it needs.</p><p class="tech">One import from @banqor/sdk.</p></li>
+        <li data-lines="3,4,5,6,7,11"><span class="walk-n">2</span><h3>Connect it to your credit line</h3><p class="plain">The agent gets its own key and is pointed at your vault, the credit line backed by your Bitcoin on Mezo.</p><p class="tech">Agent key, vault address, network and RPC.</p></li>
+        <li data-lines="8,9"><span class="walk-n">3</span><h3>Keep a little pocket money</h3><p class="plain">When the agent has less than 0.20 MUSD on hand, it borrows 1 more from your vault by itself. Nobody tops it up.</p><p class="tech">minFloat and topUp drive automatic draw() calls.</p></li>
+        <li data-lines="10"><span class="walk-n">4</span><h3>Set a price limit</h3><p class="plain">Anything that costs more than 0.10 MUSD is refused before any money moves. Your own on-chain caps still apply on top.</p><p class="tech">maxPricePerCall, checked before signing. Refusals come back as typed errors.</p></li>
+        <li data-lines="13"><span class="walk-n">5</span><h3>Use the internet as usual</h3><p class="plain">The agent asks an API for data. If the API wants to be paid, the agent pays it in MUSD and gets the answer. No forms, no cards.</p><p class="tech">A fetch-compatible function that handles x402 payments.</p></li>
+      </ol>
+      <div class="code walk-code">
+        <div class="code-bar"><span>agent.ts</span><button class="copy" id="copy" type="button">Copy</button></div>
+<pre id="snippet"><span class="ln" data-l="1"><span class="tk-k">import</span> { createBanQorFetch } <span class="tk-k">from</span> <span class="tk-s">"@banqor/sdk"</span>;</span><span class="ln" data-l="2"></span><span class="ln" data-l="3"><span class="tk-k">const</span> <span class="tk-f">fetchPaid</span> = createBanQorFetch({</span><span class="ln" data-l="4">  agentKey: process.env.AGENT_KEY,</span><span class="ln" data-l="5">  vault: <span class="tk-s">"0xcDa3Cb64aEd90C2A77981434d66AD3F3197fC791"</span>,</span><span class="ln" data-l="6">  network: <span class="tk-s">"eip155:31611"</span>,</span><span class="ln" data-l="7">  rpcUrl: <span class="tk-s">"https://rpc.test.mezo.org"</span>,</span><span class="ln" data-l="8">  minFloat: <span class="tk-s">"0.20"</span>,        <span class="tk-c">// draw below this</span></span><span class="ln" data-l="9">  topUp: <span class="tk-s">"1.00"</span>,           <span class="tk-c">// MUSD per draw</span></span><span class="ln" data-l="10">  maxPricePerCall: <span class="tk-s">"0.10"</span>,  <span class="tk-c">// refuse pricier calls</span></span><span class="ln" data-l="11">});</span><span class="ln" data-l="12"></span><span class="ln" data-l="13"><span class="tk-k">const</span> res = <span class="tk-k">await</span> <span class="tk-f">fetchPaid</span>(<span class="tk-s">"https://api.example.com/price"</span>);<span class="caret" aria-hidden="true"></span></span></pre>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="seam d2l" aria-hidden="true"></div>
+
+<!-- ================= PROOF ================= -->
+<section class="band-light" id="proof">
+  <div class="wrap">
+    <p class="eyebrow mute">Proof</p>
+    <h2 style="margin-top:14px">Running on Mezo testnet.<span class="soft">Real trove, real payments.</span></h2>
+    <div class="proof-grid">
+      <div><p class="n mono" data-count="146">146</p><p class="mute">paid x402 calls settled on-chain through the x402 facilitator</p></div>
+      <div><p class="n mono" data-count="3.88">3.88</p><p class="mute">MUSD paid out in micro-payments of 0.01–0.05</p></div>
+      <div><p class="n mono" data-count="5">5</p><p class="mute">automatic draws, one of them borrowed against BTC</p></div>
+      <div><p class="n mono"><em>0</em></p><p class="mute">manual top-ups</p></div>
+    </div>
+    <p class="proof-note mute">Snapshot from the demo vault on Oct 24, 2026.
+      <a href="https://repo.sourcify.dev/31611/0x036cEDfaA78eC84Ae52ecefe0d27D7D42Daac5ab" target="_blank" rel="noopener">Factory on Sourcify</a> ·
+      <a href="https://repo.sourcify.dev/31611/0xcDa3Cb64aEd90C2A77981434d66AD3F3197fC791" target="_blank" rel="noopener">Vault on Sourcify</a> ·
+      <a href="https://explorer.test.mezo.org/address/0xcDa3Cb64aEd90C2A77981434d66AD3F3197fC791" target="_blank" rel="noopener">Vault on the explorer</a></p>
+  </div>
+</section>
+<div class="seam l2d" aria-hidden="true"></div>
+
+<!-- ================= WHO GAINS ================= -->
+<section class="band-dark" id="parties">
+  <div class="wrap">
+    <p class="eyebrow mute">Who gains</p>
+    <h2 style="margin-top:14px">Everyone on the line gains.<span class="soft">Nobody sells Bitcoin.</span></h2>
+    <div class="sheet" role="table" aria-label="What each party gets, before and with BanQor">
+      <div class="sheet-head" role="row"><span role="columnheader">Party</span><span role="columnheader">Before</span><span role="columnheader">With BanQor</span></div>
+      <div class="sheet-row" role="row">
+        <span class="who" role="cell">BTC holder<small>owns the vault</small></span>
+        <span class="before" role="cell">Sells BTC, or tops up agent hot wallets by hand.</span>
+        <span class="after" role="cell"><span><b>BTC stays on Mezo.</b> Agents get spending power on their own, inside limits the contract enforces.</span></span>
+      </div>
+      <div class="sheet-row" role="row">
+        <span class="who" role="cell">Agent developer<small>writes the agent</small></span>
+        <span class="before" role="cell">Writes custom wallet top-up logic and handles running dry.</span>
+        <span class="after" role="cell"><span><b>One line.</b> <span class="mono">createBanQorFetch()</span> replaces <span class="mono">fetch</span>, and paying just works.</span></span>
+      </div>
+      <div class="sheet-row" role="row">
+        <span class="who" role="cell">API sellers<small>charge over x402</small></span>
+        <span class="before" role="cell">Few buyers with funded wallets.</span>
+        <span class="after" role="cell"><span><b>Buyers that can always pay,</b> in MUSD, per request.</span></span>
+      </div>
+      <div class="sheet-row" role="row">
+        <span class="who" role="cell">Mezo<small>the network</small></span>
+        <span class="before" role="cell">MUSD demand from people only.</span>
+        <span class="after" role="cell"><span><b>A new kind of borrower that never sleeps.</b> More MUSD minted against BTC, and real x402 volume.</span></span>
+      </div>
+      <div class="sheet-total"><span>Collateral sold</span><b>0 BTC</b></div>
+    </div>
+  </div>
+</section>
+<!-- ================= FINALE: CTA and footer on one black ground ================= -->
+<div class="finale band-dark">
+  <div class="cta-stage">
+  <span class="giant" aria-hidden="true">BanQor</span>
+  <section class="cta">
+    <div class="wrap inner">
+      <h2>Give your agent a credit line.<span class="soft">Keep your Bitcoin.</span></h2>
+      <div class="ctas">
+        <a class="btn btn-orange" href="https://github.com/Turnless/BanQor" target="_blank" rel="noopener">Start from the repo <span class="arr">→</span></a>
+        <a class="btn btn-ghost" href="app.html#/open">Open a line</a>
+      </div>
+    </div>
+  </section>
+  </div>
+  <footer>
+    <div class="wrap foot">
+      <a class="brand" href="#top">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="15" cy="15" r="11" fill="none" stroke="#f2efeb" stroke-width="3.2"/><path d="M20 20 L27.5 27.5" stroke="#ff6b1f" stroke-width="3.6" stroke-linecap="round"/><circle cx="15" cy="15" r="3.6" fill="#ff6b1f"/></svg>
+        BanQor
+      </a>
+      <nav class="foot-links" aria-label="Footer">
+        <a href="#how">How it works</a>
+        <a href="#line">Safety</a>
+        <a href="#developers">Developers</a>
+        <a href="app.html#/overview">Dashboard</a>
+        <a href="https://github.com/Turnless/BanQor" target="_blank" rel="noopener">GitHub ↗</a>
+        <a href="https://repo.sourcify.dev/31611/0xcDa3Cb64aEd90C2A77981434d66AD3F3197fC791" target="_blank" rel="noopener">Sourcify ↗</a>
+        <a href="https://explorer.test.mezo.org/address/0xcDa3Cb64aEd90C2A77981434d66AD3F3197fC791" target="_blank" rel="noopener">Explorer ↗</a>
+      </nav>
+    </div>
+    <div class="wrap foot-base"><span>Testnet only · unaudited · not financial advice</span><span>Built on Mezo · chain 31611</span></div>
+  </footer>
+</div>
+
+<script>
+(() => {
+
+  // ---- Flux-style sculpted silk, drawn as shaded diagonal bands ----
+  // Each band's brightness follows the slope of its own wave, so the folds read as lit from one side.
+  const ramps = {
+    hero: [[0, [10, 10, 11]], [0.28, [38, 30, 26]], [0.46, [214, 88, 28]], [0.58, [252, 140, 76]], [0.72, [232, 226, 219]], [1, [252, 250, 247]]],
+  };
+  const lerp = (a, b, t) => a + (b - a) * t;
+  function color(ramp, t) {
+    t = Math.max(0, Math.min(1, t));
+    for (let i = 1; i < ramp.length; i++) {
+      const [t1, c1] = ramp[i];
+      const [t0, c0] = ramp[i - 1];
+      if (t <= t1) {
+        const k = (t - t0) / (t1 - t0);
+        return `rgb(${Math.round(lerp(c0[0], c1[0], k))},${Math.round(lerp(c0[1], c1[1], k))},${Math.round(lerp(c0[2], c1[2], k))})`;
+      }
+    }
+    const c = ramp[ramp.length - 1][1];
+    return `rgb(${c[0]},${c[1]},${c[2]})`;
+  }
+
+  function drawSilk(canvas, rampName, opts) {
+    const rect = canvas.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const scale = opts.scale ?? 0.5; // soft by nature, so render at reduced resolution and let CSS upscale
+    const w = Math.ceil(rect.width * scale), h = Math.ceil(rect.height * scale);
+    if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+    const T = opts.t ?? 0, S = opts.stops ?? 48;
+    const ctx = canvas.getContext("2d");
+    const ramp = ramps[rampName];
+    ctx.fillStyle = color(ramp, 0); ctx.fillRect(0, 0, w, h);
+    const diag = Math.hypot(w, h);
+    ctx.save();
+    ctx.translate(w * opts.cx, h * opts.cy);
+    ctx.rotate(opts.angle);
+    // broad folds: neighbouring bands differ only slightly in phase, so shading flows like one surface
+    // T shifts both wave phases over time, so the folds slowly travel along the fabric
+    const gap = 4, step = opts.step ?? 6, A1 = 34, A2 = 70, k1 = 0.0068, k2 = 0.0024, p1 = 0.035, p2 = 0.012;
+    const y = (x, j) => j * gap + A1 * Math.sin(k1 * x + j * p1 + T * 0.9) + A2 * Math.sin(k2 * x - j * p2 + 1.3 + T * 0.4);
+    const slope = (x, j) => A1 * k1 * Math.cos(k1 * x + j * p1 + T * 0.9) + A2 * k2 * Math.cos(k2 * x - j * p2 + 1.3 + T * 0.4);
+    const maxSlope = A1 * k1 + A2 * k2;
+    const x0 = -diag, x1 = diag;
+    const bands = Math.ceil((2 * diag) / gap);
+    for (let b = -bands / 2; b < bands / 2; b++) {
+      const grad = ctx.createLinearGradient(x0, 0, x1, 0);
+      for (let s = 0; s <= S; s++) {
+        const x = x0 + ((x1 - x0) * s) / S;
+        const n = slope(x, b) / maxSlope; // -1..1
+        grad.addColorStop(s / S, color(ramp, opts.bias + opts.gain * n));
+      }
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      for (let x = x0; x <= x1; x += step) ctx.lineTo(x, y(x, b));
+      for (let x = x1; x >= x0; x -= step) ctx.lineTo(x, y(x, b + 1) + 0.6);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  const hero = document.getElementById("silk-hero");
+  const heroOpts = { cx: 0.5, cy: 0.5, angle: -0.62, bias: 0.6, gain: 0.48 };
+  const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const canObserve = "IntersectionObserver" in window;
+
+  // ---- hero light: a WebGL arc of light, white core with an orange fringe, flowing slowly ----
+  const ARC_FRAG = `
+    precision highp float;
+    uniform vec2 u_res; uniform float u_t;
+    float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+    float noise(vec2 p) {
+      vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);
+      return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
+    }
+    float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { v += a * noise(p); p *= 2.03; a *= 0.5; } return v; }
+    void main() {
+      vec2 uv = (gl_FragCoord.xy - 0.5 * u_res) / u_res.y;           // centred, hero height = 1
+      float t = u_t;
+      float tilt = -0.32;                                           // lean the arc like a sweep of light
+      uv = mat2(cos(tilt), -sin(tilt), sin(tilt), cos(tilt)) * uv;
+      vec3 col = vec3(0.043, 0.039, 0.039);                         // BanQor black
+      vec2 c = vec2(-0.12 + 0.03 * sin(t * 0.21), -1.02 + 0.02 * cos(t * 0.17));
+      float R = 1.34 + 0.015 * sin(t * 0.3);
+      vec2 q = uv - c; float r = length(q); float ang = atan(q.y, q.x);
+      float span = smoothstep(0.2, 0.85, ang) * (1.0 - smoothstep(1.7, 2.5, ang));
+      float flow = 0.6 + 0.4 * fbm(vec2(ang * 7.0 - t * 0.35, r * 3.0 + t * 0.05));
+      vec3 white = vec3(1.0, 0.976, 0.95), orange = vec3(1.0, 0.42, 0.12);
+      float d = abs(r - R);
+      float core = exp(-d * d * 9000.0) * 1.25;
+      float glow = exp(-d * 26.0) * 0.5;
+      float halo = exp(-d * 6.5) * 0.16;
+      col += span * flow * (white * core + mix(white, orange, 0.35) * glow + orange * halo);
+      float d2 = abs(r - (R - 0.085));                              // a fainter trail inside the arc
+      col += span * 0.4 * flow * (white * exp(-d2 * d2 * 22000.0) * 0.7 + orange * exp(-d2 * 40.0) * 0.12);
+      // anamorphic lens streak through the brightest stretch of the arc
+      vec2 apex = c + R * vec2(cos(1.15), sin(1.15));
+      float streak = exp(-pow((uv.y - apex.y) * 24.0, 2.0)) * exp(-abs(uv.x - apex.x) * 1.3);
+      col += vec3(1.0, 0.87, 0.76) * streak * 0.2;
+      col *= 1.0 - 0.22 * length(uv * vec2(0.6, 1.0));               // gentle vignette
+      float intro = 0.3 + 0.7 * smoothstep(6.0, 8.0, t);               // the light swells up on load
+      col *= intro * (0.988 + 0.012 * sin(t * 9.0));                   // projector flicker, barely there
+      gl_FragColor = vec4(col, 1.0);
+    }`;
+  function startLightArc(canvas) {
+    let gl;
+    try { gl = canvas.getContext("webgl", { antialias: false, alpha: false }); } catch { gl = null; }
+    if (!gl) return false;
+    const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return gl.getShaderParameter(s, gl.COMPILE_STATUS) ? s : null; };
+    const vs = sh(gl.VERTEX_SHADER, "attribute vec2 p; void main() { gl_Position = vec4(p, 0.0, 1.0); }");
+    const fs = sh(gl.FRAGMENT_SHADER, ARC_FRAG);
+    if (!vs || !fs) return false;
+    const prog = gl.createProgram();
+    gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return false;
+    gl.useProgram(prog);
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW); // one full-screen triangle
+    const loc = gl.getAttribLocation(prog, "p");
+    gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    const uRes = gl.getUniformLocation(prog, "u_res"), uT = gl.getUniformLocation(prog, "u_t");
+    const size = () => {
+      const r = canvas.getBoundingClientRect();
+      const s = Math.min(window.devicePixelRatio || 1, 1.5) * 0.75; // soft light, so a little under native resolution
+      canvas.width = Math.max(1, Math.round(r.width * s)); canvas.height = Math.max(1, Math.round(r.height * s));
+      gl.viewport(0, 0, canvas.width, canvas.height);
+    };
+    const draw = (time) => { gl.uniform2f(uRes, canvas.width, canvas.height); gl.uniform1f(uT, time); gl.drawArrays(gl.TRIANGLES, 0, 3); };
+    size();
+    let lastT = still ? 9 : 6; // reduced motion: draw the full-brightness frame
+    draw(lastT);
+    window.addEventListener("resize", () => { size(); draw(lastT); });
+    if (!still) {
+      let on = true;
+      if (canObserve) new IntersectionObserver((es) => es.forEach((e) => (on = e.isIntersecting))).observe(canvas.parentElement);
+      const t0 = performance.now();
+      const frame = (now) => { lastT = 6 + (now - t0) / 1000; if (on) draw(lastT); requestAnimationFrame(frame); };
+      requestAnimationFrame(frame);
+    }
+    return true;
+  }
+  const heroLight = startLightArc(hero); // falls back to the silk drawing without WebGL
+  if (heroLight) hero.classList.add("light");
+
+  const paint = () => {
+    if (!heroLight) drawSilk(hero, "hero", heroOpts);
+  };
+  paint(); // full-quality still frame first, so the page is complete at rest
+  let t;
+  window.addEventListener("resize", () => { clearTimeout(t); t = setTimeout(paint, 150); });
+  /** Runs fn once when el scrolls into view (immediately when motion is off or observers are missing). */
+  function onView(el, fn, threshold = 0.3) {
+    if (!el) return;
+    if (still || !canObserve) return fn();
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { io.disconnect(); fn(); } }), { threshold });
+    io.observe(el);
+  }
+
+  // The silk moves with a CSS drift on the drawn canvas (compositor only); redrawing it per frame costs ~60ms.
+
+  // ---- cinematic camera: the hero drifts away as you scroll; section headlines rack into focus at centre ----
+  if (!still) {
+    const heroEl = document.querySelector(".hero"), heroGrid = document.querySelector(".hero-grid");
+    const heads = [...document.querySelectorAll("section h2")];
+    const camera = () => {
+      const vh = window.innerHeight, y = window.scrollY, hh = heroEl.offsetHeight;
+      if (y < hh) {
+        const k = y / hh;
+        heroGrid.style.transform = `translate3d(0, ${y * 0.32}px, 0)`;
+        heroGrid.style.opacity = String(Math.max(0, 1 - k * 1.25));
+        hero.style.transform = `scale(${1 + k * 0.12})`;
+      }
+      heads.forEach((h) => {
+        const b = h.getBoundingClientRect();
+        const d = Math.abs(b.top + b.height / 2 - vh * 0.45) / vh; // 0 at the focus line
+        const blur = Math.min(3, Math.max(0, (d - 0.28) * 9));
+        h.style.filter = blur > 0.05 ? `blur(${blur.toFixed(2)}px)` : "";
+      });
+    };
+    window.addEventListener("scroll", camera, { passive: true });
+    window.addEventListener("resize", camera);
+    camera();
+  }
+
+  // ---- sections slide in (only those below the first screen, so nothing visible starts faded) ----
+  document.querySelectorAll("section .wrap > .eyebrow, section h2, .bento > .card, .ledger-row, .sheet-row, .proof-grid > div, .walk-code").forEach((el, i) => {
+    el.classList.add("reveal");
+    if (still || !canObserve || el.getBoundingClientRect().top < window.innerHeight) return;
+    el.classList.add("rv");
+    el.style.transitionDelay = `${(i % 4) * 70}ms`;
+    onView(el, () => el.classList.remove("rv"), 0.15);
+  });
+
+  // ---- ledger verdicts are stamped as they arrive ----
+  document.querySelectorAll(".verdict").forEach((v, i) => onView(v, () => setTimeout(() => v.classList.add("stamped"), i * 140), 0.6));
+
+  // ---- the ICR marker sweeps up from the floor to where the trove sits ----
+  const marker = document.querySelector(".gauge .marker");
+  if (marker && !still) {
+    onView(marker.closest("svg"), () => {
+      marker.classList.add("from-floor");
+      requestAnimationFrame(() => requestAnimationFrame(() => marker.classList.remove("from-floor")));
+    }, 0.6);
+  }
+
+  // ---- numbers count up to their real values ----
+  document.querySelectorAll("[data-count]").forEach((el) => {
+    const end = parseFloat(el.dataset.count);
+    const dp = (el.dataset.count.split(".")[1] || "").length;
+    onView(el, () => {
+      if (still) return;
+      const t0 = performance.now(), dur = 1300;
+      const tick = (now) => {
+        const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+        el.textContent = (end * e).toFixed(dp);
+        if (k < 1) requestAnimationFrame(tick); else el.textContent = el.dataset.count;
+      };
+      requestAnimationFrame(tick);
+    }, 0.6);
+  });
+
+  // ---- activity: replay the vault's real events, one row at a time ----
+  const feed = [...document.querySelectorAll("#feed li")];
+  if (feed.length && !still) {
+    let k = feed.length - 1;
+    onView(document.getElementById("feed"), () => {
+      const step = () => { feed.forEach((li, j) => li.classList.toggle("now", j === k)); k = (k - 1 + feed.length) % feed.length; };
+      step(); setInterval(step, 2200);
+    });
+  }
+
+  // ---- how it works: the section pins while you scroll; the cards travel sideways and the centre card is in focus ----
+  const steps = [...document.querySelectorAll("#steps .step")];
+  const fill = document.getElementById("beam-fill"), dot = document.getElementById("beam-dot");
+  const how = document.getElementById("how"), track = document.getElementById("steps");
+  if (steps.length && still) {
+    steps[0].classList.add("on"); // reduced motion: a plain grid, first step marked
+    fill.style.width = "10%"; dot.style.left = "10%";
+  }
+  if (steps.length && !still) {
+    how.classList.add("is-pinned");
+    const pin = how.querySelector(".pin");
+    let distance = 0, cardW = 0;
+    const layout = () => {
+      const vw = pin.clientWidth;
+      cardW = steps[0].getBoundingClientRect().width;
+      const pad = Math.max(16, (vw - cardW) / 2);       // first and last card can both reach the centre
+      track.style.paddingLeft = `${pad}px`; track.style.paddingRight = `${pad}px`;
+      distance = Math.max(0, track.scrollWidth - vw);
+      how.style.height = `${window.innerHeight + distance}px`; // vertical room equal to the sideways travel
+      update();
+    };
+    const update = () => {
+      const r = how.getBoundingClientRect();
+      const run = Math.max(1, how.offsetHeight - window.innerHeight);
+      const p = Math.min(1, Math.max(0, -r.top / run));
+      track.style.transform = `translate3d(${-p * distance}px, 0, 0)`;
+      const mid = pin.clientWidth / 2;
+      let best = 0, bestF = -1;
+      steps.forEach((el, j) => {
+        const b = el.getBoundingClientRect();
+        const f = 1 - Math.min(1, Math.abs(b.left + b.width / 2 - mid) / (cardW + 24)); // 1 at centre, 0 a card away
+        el.style.transform = `scale(${0.86 + 0.14 * f})`;
+        el.style.opacity = String(0.38 + 0.62 * f);
+        if (f > bestF) { bestF = f; best = j; }
+      });
+      steps.forEach((el, j) => el.classList.toggle("on", j === best));
+      const pos = 4 + p * 92;
+      fill.style.width = `${pos}%`; dot.style.left = `${pos}%`;
+    };
+    // five cards are cheap to place, so update straight from the scroll event (no dependence on animation frames)
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", () => setTimeout(layout, 120));
+    layout();
+  }
+
+
+
+  // ---- reading focus: words light up with scroll; the row nearest screen centre is in focus ----
+  const reveals = [...document.querySelectorAll(".word-reveal")].map((p) => {
+    const hot = new Set(["x402.", "fund", "three", "bad", "options."]); // the words that carry the point
+    p.innerHTML = p.textContent.trim().split(/\s+/).map((w) => `<span class="w${hot.has(w) ? " hot" : ""}">${w}</span>`).join(" ");
+    return { p, words: [...p.querySelectorAll(".w")] };
+  });
+  const rowGroups = [document.querySelector(".ledger"), document.querySelector(".sheet")].filter(Boolean);
+  rowGroups.forEach((g) => g.classList.add("focus-rows"));
+  const readingFocus = () => {
+    const vh = window.innerHeight;
+    reveals.forEach(({ p, words }) => {
+      const r = p.getBoundingClientRect();
+      // fully dim when the paragraph enters at 85% of the screen, fully lit by the time it reaches 40%
+      const k = Math.min(1, Math.max(0, (vh * 0.85 - r.top) / (vh * 0.45 + r.height * 0.5)));
+      const n = Math.round(k * words.length);
+      words.forEach((w, i) => w.classList.toggle("lit", i < n));
+    });
+    rowGroups.forEach((g) => {
+      const rows = [...g.querySelectorAll(":scope > .ledger-row, :scope > .sheet-row")];
+      let best = null, bestD = Infinity;
+      rows.forEach((row) => {
+        const b = row.getBoundingClientRect();
+        const d = Math.abs(b.top + b.height / 2 - vh * 0.5);
+        const f = 1 - Math.min(1, d / (vh * 0.3));
+        row.style.opacity = String(0.32 + 0.68 * f);
+        if (d < bestD) { bestD = d; best = row; }
+      });
+      rows.forEach((row) => row.classList.toggle("lit", row === best && bestD < vh * 0.3));
+    });
+  };
+  if (still) {
+    reveals.forEach(({ words }) => words.forEach((w) => w.classList.add("lit")));
+  } else {
+    window.addEventListener("scroll", readingFocus, { passive: true });
+    window.addEventListener("resize", readingFocus);
+    readingFocus();
+  }
+
+  // ---- developers walkthrough: the step nearest screen centre lights its code lines ----
+  const walk = document.getElementById("walk");
+  const walkSteps = [...document.querySelectorAll("#walk-steps li")];
+  const lines = [...document.querySelectorAll("#snippet .ln")];
+  if (walk && walkSteps.length) {
+    walk.classList.add("has-focus");
+    let current = -1;
+    const focusStep = () => {
+      const mid = window.innerHeight * 0.5;
+      let best = 0, bestD = Infinity;
+      walkSteps.forEach((li, i) => {
+        const b = li.getBoundingClientRect();
+        const d = Math.abs(b.top + b.height / 2 - mid);
+        if (d < bestD) { bestD = d; best = i; }
+      });
+      if (best === current) return;
+      current = best;
+      const on = new Set(walkSteps[best].dataset.lines.split(",").map(Number));
+      walkSteps.forEach((li, i) => li.classList.toggle("on", i === best));
+      lines.forEach((ln) => ln.classList.toggle("hl", on.has(Number(ln.dataset.l))));
+    };
+    window.addEventListener("scroll", focusStep, { passive: true });
+    window.addEventListener("resize", focusStep);
+    focusStep();
+  }
+
+  // ---- copy the SDK snippet ----
+  const btn = document.getElementById("copy");
+  const pre = document.getElementById("snippet");
+  btn.addEventListener("click", () => {
+    const text = [...pre.querySelectorAll(".ln")].map((l) => l.textContent).join("\n");
+    const done = (label) => { btn.textContent = label; setTimeout(() => (btn.textContent = "Copy"), 1600); };
+    const select = () => { const r = document.createRange(); r.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(r); done("Selected"); };
+    try { navigator.clipboard.writeText(text).then(() => done("Copied"), select); } catch { select(); }
+  });
+})();
+</script>
+</body>
 </html>

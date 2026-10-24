@@ -1,8 +1,6 @@
-import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { usePublicClient, useReadContract, useWriteContract } from "wagmi";
-import { formatUnits, maxUint256, type Address, type Hash } from "viem";
-import { banqorVaultAbi, toBanQorError } from "@banqor/sdk";
+import { useReadContract } from "wagmi";
+import { formatUnits, maxUint256, type Address } from "viem";
+import { banqorVaultAbi } from "@banqor/sdk";
 import { chain, settings } from "./config";
 
 // MUSD and BTC both use 18 decimals on Mezo
@@ -17,59 +15,33 @@ export const pct = (bps: bigint | number | undefined) => {
 
 export const short = (a?: string) => (a ? `${a.slice(0, 6)}…${a.slice(-4)}` : "");
 
+/** 18-decimal amount as a plain number, for display and percentages only (never for amounts sent on-chain). */
+export const toNum = (v: bigint) => Number(formatUnits(v, 18));
+/** Fixed decimals: amounts in tables and previews. */
+export const num = (v: bigint | number, digits = 2) =>
+  (typeof v === "bigint" ? toNum(v) : v).toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+/** Whole dollars: prices. */
+export const usd = (v: bigint | number) => "$" + Math.round(typeof v === "bigint" ? toNum(v) : v).toLocaleString("en-US");
+/** Compact amount: drops decimals on whole numbers ("20", "0.01", "2.5"). */
+export const amt = (v: bigint | number) => {
+  const n = typeof v === "bigint" ? toNum(v) : v;
+  return n.toLocaleString("en-US", { maximumFractionDigits: n > 0 && n < 1 ? 4 : 2 });
+};
+/** ICR in basis points → "279.8%". */
+export const ratio = (bps: bigint) => (bps === maxUint256 ? "∞" : `${(Number(bps) / 100).toFixed(1)}%`);
+export const day = (unix: bigint | number) =>
+  new Date(Number(unix) * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+
 /** Every read is pinned to Mezo, so read-only views work whatever network the wallet is on. */
 export const onMezo = { chainId: chain.id } as const;
 
 /** lineStatus() polled every settings.pollMs (ARCHITECTURE §7). */
-export function useLineStatus(vault: Address) {
+export function useLineStatus(vault: Address | undefined) {
   return useReadContract({
     ...onMezo,
     address: vault,
     abi: banqorVaultAbi,
     functionName: "lineStatus",
-    query: { refetchInterval: settings.pollMs },
+    query: { enabled: !!vault, refetchInterval: settings.pollMs },
   });
-}
-
-export type TxState =
-  | { status: "idle" }
-  | { status: "pending"; label: string; hash?: Hash }
-  | { status: "confirmed"; label: string; hash: Hash }
-  | { status: "failed"; label: string; hash?: Hash; error: string };
-
-type WriteArgs = Parameters<ReturnType<typeof useWriteContract>["writeContractAsync"]>[0];
-// payable vault functions (openLine, addCollateral) take `value`; the generic wagmi type can't express that here
-type TxArgs = Omit<WriteArgs, "value" | "chainId"> & { value?: bigint };
-
-/**
- * Sends a contract write and tracks pending / confirmed / failed (NFR-5). `args` may be a function, so
- * preparation (input checks, hint reads) fails into the same visible "failed" state. Refreshes reads on success.
- */
-export function useTx() {
-  const [state, setState] = useState<TxState>({ status: "idle" });
-  const { writeContractAsync } = useWriteContract();
-  const client = usePublicClient(onMezo);
-  const qc = useQueryClient();
-
-  async function run(label: string, args: TxArgs | (() => Promise<TxArgs>)) {
-    setState({ status: "pending", label });
-    let hash: Hash | undefined;
-    try {
-      if (!client) throw new Error("no RPC client for Mezo");
-      const resolved = typeof args === "function" ? await args() : args;
-      hash = await writeContractAsync({ ...resolved, chainId: chain.id } as WriteArgs);
-      setState({ status: "pending", label, hash });
-      const r = await client.waitForTransactionReceipt({ hash });
-      if (r.status !== "success") throw new Error("transaction reverted");
-      setState({ status: "confirmed", label, hash });
-      await qc.invalidateQueries();
-      return true;
-    } catch (e) {
-      const err = toBanQorError(e);
-      setState({ status: "failed", label, hash, error: err.code === "Unknown" ? err.message : `${err.code}: ${err.message}` });
-      return false;
-    }
-  }
-
-  return { state, run, reset: () => setState({ status: "idle" }) };
 }

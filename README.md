@@ -37,7 +37,7 @@ Built for the Mezo Buildathon (AKINDO). Track 2, Access and Distribution (primar
 | `packages/sdk` | `@banqor/sdk`: `createBanQorFetch()`, a vault client, typed errors, hints and preview math |
 | `apps/api` | Demo paid API using the official `@x402/express` middleware (`/price`, `/funding`, `/sentiment`, plus a free `/health`) |
 | `apps/agent` | `setup`, `run` and `breach` scripts |
-| `apps/dashboard` | Owner dashboard (Vite, React, wagmi) |
+| `apps/dashboard` | Landing page (`index.html`) and owner dashboard (`app.html`: Overview, Agents, Activity, Open a line; Vite, React, wagmi) |
 | `deployments/31611.json` | The single source of addresses for every package |
 | `PRD.md`, `ARCHITECTURE.md`, `OVERVIEW.md`, `PLAN.md` | Product and design docs |
 
@@ -130,7 +130,7 @@ pnpm agent:breach
 pnpm dashboard
 ```
 
-Open the dashboard with `?vault=0x…` to view any vault read-only.
+The landing page is at http://localhost:5173 and the dashboard at http://localhost:5173/app.html. Connect the owner wallet to manage your line, or add `?vault=0x…` to any page (for example `app.html#/overview?vault=0x…`) to view a vault read-only.
 
 ## Tests
 
