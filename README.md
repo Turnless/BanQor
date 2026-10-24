@@ -132,6 +132,8 @@ pnpm dashboard
 
 The landing page is at http://localhost:5173 and the dashboard at http://localhost:5173/app.html. Connect the owner wallet to manage your line, or add `?vault=0x…` to any page (for example `app.html#/overview?vault=0x…`) to view a vault read-only.
 
+To deploy the landing page and dashboard on Vercel, import the repo and set **Root Directory** to `apps/dashboard`. Everything else comes from `apps/dashboard/vercel.json`. No environment variables are needed, and none of the `.env` keys belong there.
+
 ## Tests
 
 | Suite | Command | Covers |
