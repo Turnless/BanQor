@@ -43,7 +43,14 @@ Built for the Mezo Buildathon (AKINDO). Track 2, Access and Distribution (primar
 
 ## Addresses
 
-All addresses (the Mezo MUSD system, plus the BanQor factory and demo vault once deployed) are in [`deployments/31611.json`](deployments/31611.json). Explorer: https://explorer.test.mezo.org
+All addresses (the Mezo MUSD system and BanQor) live in [`deployments/31611.json`](deployments/31611.json), the single source every package reads.
+
+| Contract (Mezo testnet) | Address | Source verified |
+|---|---|---|
+| BanQorFactory | [`0x036cEDfaA78eC84Ae52ecefe0d27D7D42Daac5ab`](https://explorer.test.mezo.org/address/0x036cEDfaA78eC84Ae52ecefe0d27D7D42Daac5ab) | [Sourcify, exact match](https://repo.sourcify.dev/31611/0x036cEDfaA78eC84Ae52ecefe0d27D7D42Daac5ab) |
+| Demo BanQorVault (owns a live Mezo trove) | [`0xcDa3Cb64aEd90C2A77981434d66AD3F3197fC791`](https://explorer.test.mezo.org/address/0xcDa3Cb64aEd90C2A77981434d66AD3F3197fC791) | [Sourcify, exact match](https://repo.sourcify.dev/31611/0xcDa3Cb64aEd90C2A77981434d66AD3F3197fC791) |
+
+Verification on the Mezo testnet explorer was submitted too, but the explorer's verification queue hasn't processed any contract since Oct 21, 2026. The Sourcify matches are exact, covering source, compiler settings and metadata.
 
 ## For agent developers
 
