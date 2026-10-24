@@ -1,0 +1,24 @@
+{
+  "name": "banqor",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.18.3",
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "contracts:build": "cd contracts && forge build",
+    "contracts:test": "cd contracts && forge test",
+    "api": "pnpm --filter @banqor/api start",
+    "dashboard": "pnpm --filter @banqor/dashboard dev",
+    "contracts:test:fork": "cd contracts && node --env-file-if-exists=../.env ../scripts/with-env.mjs forge test --match-contract \"BanQorFork|MezoSpike\" --fork-url {{MEZO_RPC}}",
+    "contracts:deploy": "cd contracts && node --env-file-if-exists=../.env ../scripts/with-env.mjs forge script script/Deploy.s.sol --rpc-url {{MEZO_RPC}} --broadcast --verify --verifier blockscout --verifier-url {{MEZO_VERIFIER_URL}} && node --env-file-if-exists=../.env ../scripts/record-deploy.mjs",
+    "agent:setup": "pnpm --filter @banqor/agent run setup",
+    "agent:run": "pnpm --filter @banqor/agent run demo",
+    "agent:breach": "pnpm --filter @banqor/agent run breach",
+    "prebuild": "pnpm contracts:build && pnpm --filter @banqor/sdk run gen-abi"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}

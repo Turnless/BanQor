@@ -1,0 +1,21 @@
+{
+  "chainId": 31611,
+  "rpc": "https://rpc.test.mezo.org",
+  "explorer": "https://explorer.test.mezo.org",
+  "verifier": "https://api.explorer.test.mezo.org/api/",
+  "network": "eip155:31611",
+  "facilitator": "https://facilitator.vativ.io",
+  "mezo": {
+    "musd": "0x118917a40FAF1CD7a13dB0Ef56C86De7973Ac503",
+    "borrowerOperations": "0xCdF7028ceAB81fA0C6971208e83fa7872994beE5",
+    "troveManager": "0xE47c80e8c23f6B4A1aE41c34837a0599D5D16bb0",
+    "hintHelpers": "0x4e4cBA3779d56386ED43631b4dCD6d8EacEcBCF6",
+    "sortedTroves": "0x722E4D24FD6Ff8b0AC679450F3D91294607268fA",
+    "priceFeed": "0x86bCF0841622a5dAC14A313a15f96A95421b9366"
+  },
+  "banqor": {
+    "factory": "0x036cedfaa78ec84ae52ecefe0d27d7d42daac5ab",
+    "factoryDeployBlock": 16333797,
+    "demoVault": "0xcDa3Cb64aEd90C2A77981434d66AD3F3197fC791"
+  }
+}

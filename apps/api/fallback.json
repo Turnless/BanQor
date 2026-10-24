@@ -1,0 +1,38 @@
+{
+  "capturedAt": "2026-10-23T21:15:30.556Z",
+  "note": "Snapshot served only when every live source and the cache are unavailable.",
+  "price": {
+    "usd": 81366,
+    "change24hPct": 0.03570281999974246
+  },
+  "funding": {
+    "meanRatePct": 0.006038741432088786,
+    "markets": 145,
+    "top": [
+      {
+        "market": "Nado",
+        "ratePct": 0.0299999999999999
+      },
+      {
+        "market": "OrangeX Futures",
+        "ratePct": 0.024800000000000003
+      },
+      {
+        "market": "Kalshi",
+        "ratePct": 0.02181901249601
+      },
+      {
+        "market": "BigONE Futures",
+        "ratePct": -0.021599999999999998
+      },
+      {
+        "market": "DeriW",
+        "ratePct": 0.02
+      }
+    ]
+  },
+  "sentiment": {
+    "value": 50,
+    "label": "Neutral"
+  }
+}

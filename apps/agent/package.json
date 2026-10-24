@@ -1,0 +1,25 @@
+{
+  "name": "@banqor/agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "setup": "tsx src/setup.ts",
+    "demo": "tsx src/run.ts",
+    "breach": "tsx src/breach.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@banqor/sdk": "workspace:*",
+    "dotenv": "18.0.2",
+    "viem": "2.57.10"
+  },
+  "devDependencies": {
+    "@banqor/api": "workspace:*",
+    "@types/node": "26.6.5",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "vitest": "5.0.5"
+  }
+}

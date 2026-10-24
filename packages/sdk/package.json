@@ -1,0 +1,32 @@
+{
+  "name": "@banqor/sdk",
+  "version": "0.1.0",
+  "description": "Pay x402 APIs on Mezo from a BanQor trove-backed credit line",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "gen-abi": "node scripts/gen-abi.mjs",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@x402/core": "2.16.0",
+    "@x402/evm": "2.16.0",
+    "@x402/fetch": "2.16.0",
+    "viem": "2.57.10"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.5",
+    "typescript": "5.9.3",
+    "vitest": "5.0.5"
+  }
+}
