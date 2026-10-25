@@ -13,3 +13,8 @@ coverage/
 
 # private design docs and submission notes, kept locally only
 docs/
+
+# local media (demo music, recordings)
+*.mp3
+*.m4a
+*.wav

@@ -197,33 +197,34 @@ function TestDraw({ vault, rows, initial, line }: { vault: Address; rows: AgentR
   const run = useRef(0);
   const r = rows.find((x) => x.addr === agent);
 
-  let v: bigint | undefined;
-  try {
-    v = raw.trim() ? parseUnits(raw.trim(), 18) : undefined;
-  } catch {
-    v = undefined;
-  }
   const left = r ? (r.policy.dailyCap > r.spentInWindow ? r.policy.dailyCap - r.spentInWindow : 0n) : 0n;
-  const steps: { label: string; ok: () => boolean }[] = [
+  // each check takes the amount being tested, so a run never reads an amount from an earlier render
+  const steps: { label: string; ok: (amount: bigint) => boolean }[] = [
     { label: "Agents aren't paused", ok: () => !line?.paused },
     { label: "The address is a registered agent", ok: () => !!r },
     { label: "The agent is allowed to draw", ok: () => !!r?.policy.active },
     { label: "Its permission hasn't expired", ok: () => !!r && !isExpired(r.policy) },
-    { label: "The amount is more than zero", ok: () => (v ?? 0n) > 0n },
-    { label: `At most ${r ? amt(r.policy.maxDrawPerTx) : "—"} MUSD per draw`, ok: () => !!r && v! <= r.policy.maxDrawPerTx },
-    { label: `Stays inside today's cap (${num(left)} left)`, ok: () => !!r && v! <= left },
-    { label: `Keeps its holding under ${r ? amt(r.policy.maxFloat) : "—"} MUSD`, ok: () => !!r && r.agentBalance + v! <= r.policy.maxFloat },
+    { label: "The amount is more than zero", ok: (a) => a > 0n },
+    { label: `At most ${r ? amt(r.policy.maxDrawPerTx) : "—"} MUSD per draw`, ok: (a) => !!r && a <= r.policy.maxDrawPerTx },
+    { label: `Stays inside today's cap (${num(left)} left)`, ok: (a) => !!r && a <= left },
+    { label: `Keeps its holding under ${r ? amt(r.policy.maxFloat) : "—"} MUSD`, ok: (a) => !!r && r.agentBalance + a <= r.policy.maxFloat },
     { label: "The credit line is open", ok: () => !!line?.lineOpen && line.troveStatus === 1 },
     { label: "The line stays above your ICR floor", ok: () => !!line && line.icrBps >= BigInt(line.icrFloorBps) },
   ];
 
-  // a new agent or amount clears the last result
+  // a new agent or amount clears the last result; a quick-amount chip then runs the checks for its amount
+  const pending = useRef<string | null>(null);
   useEffect(() => {
     run.current++;
     setMarks([]);
     setVerdict(null);
     setChecking(false);
-  }, [agent, raw]);
+    if (pending.current !== null) {
+      const a = pending.current;
+      pending.current = null;
+      void check(a);
+    }
+  }, [agent, raw]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function check(amountRaw = raw) {
     const me = ++run.current;
@@ -237,7 +238,7 @@ function TestDraw({ vault, rows, initial, line }: { vault: Address; rows: AgentR
       return;
     }
     if (!agent) return;
-    const localFail = steps.findIndex((s) => !s.ok());
+    const localFail = steps.findIndex((s) => !s.ok(amount));
     // the live contract has the final word: simulate draw() as the agent
     setChecking(true);
     let failed = localFail, reason = "";
@@ -304,8 +305,11 @@ function TestDraw({ vault, rows, initial, line }: { vault: Address; rows: AgentR
               key={a}
               type="button"
               onClick={() => {
-                setRaw(a);
-                setTimeout(() => check(a), 0);
+                if (a === raw) void check(a);
+                else {
+                  pending.current = a;
+                  setRaw(a);
+                }
               }}
             >
               {a}

@@ -9,6 +9,8 @@ export default defineConfig({
   // read the repo-root .env; Vite only exposes VITE_* variables to the browser, never keys
   envDir: "../..",
   server: { fs: { allow: ["../.."] } },
+  // one viem for the app and @banqor/sdk, so errors decode across both (and the bundle carries one copy)
+  resolve: { dedupe: ["viem"] },
   build: {
     // two pages: the landing page (index.html) and the dashboard app (app.html)
     rollupOptions: { input: { landing: resolve(__dirname, "index.html"), app: resolve(__dirname, "app.html") } },

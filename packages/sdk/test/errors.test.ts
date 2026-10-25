@@ -28,6 +28,28 @@ describe("error decoding", () => {
     expect(toBanQorError(e)).toBe(e);
   });
 
+  it("decodes reverts from a different copy of viem (bundled apps)", () => {
+    // shaped like viem's errors but not instances of this module's classes, as when an app bundles its own viem
+    const reverted = { name: "ContractFunctionRevertedError", data: { errorName: "DrawTooLarge" }, cause: undefined };
+    const outer = {
+      name: "ContractFunctionExecutionError",
+      shortMessage: 'The contract function "draw" reverted.',
+      message: "long viem message",
+      cause: reverted,
+      walk(fn: (e: unknown) => boolean) {
+        let e: { cause?: unknown } | undefined = this;
+        while (e) {
+          if (fn(e)) return e;
+          e = e.cause as { cause?: unknown } | undefined;
+        }
+        return undefined;
+      },
+    };
+    const e = toBanQorError(outer);
+    expect(e.code).toBe("DrawTooLarge");
+    expect(e.message).toBe("Vault refused: DrawTooLarge");
+  });
+
   it("parses CAIP-2 network ids", () => {
     expect(chainIdFromNetwork("eip155:31611")).toBe(31611);
     expect(() => chainIdFromNetwork("solana:mainnet")).toThrow();

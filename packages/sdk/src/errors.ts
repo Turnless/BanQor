@@ -63,13 +63,20 @@ function codeFromErrorName(name: string): BanQorErrorCode {
   return VAULT_ERRORS.has(name) ? (name as BanQorErrorCode) : "Unknown";
 }
 
+// Checked by shape, not instanceof: an app that bundles its own copy of viem hands us errors from classes
+// that aren't this module's, and instanceof would silently skip decoding.
+const isViemError = (e: unknown): e is BaseError =>
+  e instanceof BaseError || (typeof e === "object" && e !== null && typeof (e as BaseError).walk === "function" && "shortMessage" in e);
+const isRevertedError = (e: unknown): e is ContractFunctionRevertedError =>
+  e instanceof ContractFunctionRevertedError || (e as Error | null)?.name === "ContractFunctionRevertedError";
+
 /** Turns a viem error (or raw revert data) from a vault call into a typed BanQorError. */
 export function toBanQorError(err: unknown): BanQorError {
   if (err instanceof BanQorError) return err;
 
-  if (err instanceof BaseError) {
-    const reverted = err.walk((e) => e instanceof ContractFunctionRevertedError);
-    if (reverted instanceof ContractFunctionRevertedError) {
+  if (isViemError(err)) {
+    const reverted = err.walk((e) => isRevertedError(e));
+    if (isRevertedError(reverted)) {
       const name = reverted.data?.errorName;
       if (name) return new BanQorError(codeFromErrorName(name), `Vault refused: ${name}`, err);
       if (reverted.reason) return new BanQorError("Unknown", reverted.reason, err);
