@@ -1,6 +1,7 @@
 {
   "name": "@banqor/sdk",
   "version": "0.1.0",
+  "license": "MIT",
   "description": "Pay x402 APIs on Mezo from a BanQor trove-backed credit line",
   "type": "module",
   "main": "./dist/index.js",

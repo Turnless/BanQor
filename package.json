@@ -1,5 +1,6 @@
 {
   "name": "banqor",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.18.3",

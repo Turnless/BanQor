@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 400" width="1280" height="400" role="img" aria-label="BanQor: let your agents live off your Bitcoin">
+  <defs>
+    <radialGradient id="glow" cx="78%" cy="115%" r="75%">
+      <stop offset="0" stop-color="#ff6b1f" stop-opacity=".55"/>
+      <stop offset=".45" stop-color="#ff6b1f" stop-opacity=".12"/>
+      <stop offset="1" stop-color="#0b0a0a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="arc" x1="0" x2="1">
+      <stop offset="0" stop-color="#f2efeb" stop-opacity="0"/>
+      <stop offset=".55" stop-color="#ffb488" stop-opacity=".9"/>
+      <stop offset="1" stop-color="#ff6b1f" stop-opacity=".2"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="400" fill="#0b0a0a"/>
+  <rect width="1280" height="400" fill="url(#glow)"/>
+  <path d="M 420 470 A 560 560 0 0 1 1360 120" fill="none" stroke="url(#arc)" stroke-width="2.5"/>
+  <path d="M 520 480 A 520 520 0 0 1 1380 190" fill="none" stroke="#ff6b1f" stroke-opacity=".25" stroke-width="1.5"/>
+  <g transform="translate(88 92) scale(2.6)">
+    <circle cx="15" cy="15" r="11" fill="none" stroke="#f2efeb" stroke-width="3.2"/>
+    <path d="M20 20 L27.5 27.5" stroke="#ff6b1f" stroke-width="3.6" stroke-linecap="round"/>
+    <circle cx="15" cy="15" r="3.6" fill="#ff6b1f"/>
+  </g>
+  <text x="196" y="160" fill="#f2efeb" font-family="'Bricolage Grotesque', 'Segoe UI', Helvetica, Arial, sans-serif" font-size="64" font-weight="800" letter-spacing="-2">BanQor</text>
+  <text x="88" y="262" fill="#f2efeb" font-family="'Bricolage Grotesque', 'Segoe UI', Helvetica, Arial, sans-serif" font-size="46" font-weight="700" letter-spacing="-1.2">Let your agents</text>
+  <text x="88" y="318" fill="#ffb488" font-family="'Bricolage Grotesque', 'Segoe UI', Helvetica, Arial, sans-serif" font-size="46" font-weight="700" letter-spacing="-1.2">live off your Bitcoin.</text>
+  <text x="1192" y="362" text-anchor="end" fill="#f2efeb" fill-opacity=".55" font-family="ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace" font-size="18">A credit line for AI agents · MUSD on Mezo · x402</text>
+</svg>
