@@ -74,7 +74,7 @@ The LLM or script driving the agent never decides how much it may spend. It can 
 | **Product & Business Viability (30%)** | Every dollar an agent spends is new MUSD borrowed against BTC, so agent volume is MUSD demand. It funds the buyer side of x402 on Mezo, where sellers can already charge. Integration is one line for agent developers (`createBanQorFetch`). |
 | **Technical Implementation (20%)** | 123 tests: 78 contract unit, fuzz and invariant tests, 4 fork tests against the real Mezo contracts, and SDK, API, end-to-end and dashboard suites ([tests](#tests-and-scripts)). Reentrancy guards, checks-effects-interactions, no proxies. Live on testnet with verified source. |
 | **User Experience (10%)** | A [live dashboard](https://getbanqor.vercel.app/app.html#/overview?vault=0xcDa3Cb64aEd90C2A77981434d66AD3F3197fC791) for owners: line health at a glance, before → after previews for every action, a three-step wizard to open a line, plain-language agent limits, a pause switch, and a "Test a draw" panel that asks the live contract. Works read-only for anyone, on desktop and phone. |
-| **Submission Materials (10%)** | This README, the [landing page](https://getbanqor.vercel.app), on-chain evidence for every claim, and the design docs ([OVERVIEW](OVERVIEW.md), [PRD](PRD.md), [ARCHITECTURE](ARCHITECTURE.md), [PLAN](PLAN.md)). |
+| **Submission Materials (10%)** | This README, the [landing page](https://getbanqor.vercel.app), and on-chain evidence for every claim. |
 
 ### Track 2, Access & Distribution (primary)
 
@@ -118,7 +118,6 @@ During the live run, 6 of the 152 payments settled on-chain but the facilitator 
 | `apps/agent` | `setup`, `run` and `breach` scripts |
 | `apps/dashboard` | Landing page (`index.html`) and owner dashboard (`app.html`: Overview, Agents, Activity, Open a line; Vite, React, wagmi) |
 | `deployments/31611.json` | The single source of addresses for every package |
-| `PRD.md`, `ARCHITECTURE.md`, `OVERVIEW.md`, `PLAN.md` | Product and design docs |
 
 ## Addresses
 

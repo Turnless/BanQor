@@ -10,3 +10,6 @@ contracts/broadcast/*/31337/
 .DS_Store
 .vite/
 coverage/
+
+# private design docs and submission notes, kept locally only
+docs/
